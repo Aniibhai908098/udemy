@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Udemy Course Downloader</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --udemy-purple: #A435F0;
+            --udemy-hover: #8710E8;
+        }
+
+        .download-btn {
+            background: linear-gradient(45deg, var(--udemy-purple), var(--udemy-hover));
+            transition: all 0.3s ease;
+        }
+
+        .download-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(164, 53, 240, 0.3);
+        }
+
+        .gradient-bg {
+            background: linear-gradient(135deg, #0f172a 0%, #1C1D1F 100%);
+        }
+    </style>
+</head>
+<body class="gradient-bg min-h-screen flex items-center justify-center p-4">
+    <div class="max-w-2xl w-full">
+        <!-- Main Container -->
+        <div class="bg-white/5 backdrop-blur-lg rounded-2xl p-8 shadow-2xl border border-purple-500/10">
+            <!-- Header -->
+            <div class="text-center mb-8">
+                <h1 class="text-3xl font-bold text-white mb-2">Udemy Course Downloader</h1>
+                <p class="text-gray-400">Download your purchased Udemy courses for offline viewing</p>
+            </div>
+
+            <!-- Input Form -->
+            <form id="downloadForm" class="space-y-6">
+                <!-- URL Input -->
+                <div class="relative">
+                    <input 
+                        type="url" 
+                        id="courseUrl" 
+                        placeholder="Paste Udemy course URL here..." 
+                        class="w-full px-6 py-4 bg-black/20 border border-purple-500/20 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20"
+                        required
+                    >
+                    <button 
+                        type="button" 
+                        id="pasteBtn"
+                        class="absolute right-4 top-1/2 -translate-y-1/2 text-purple-500 hover:text-purple-400 transition-colors"
+                        title="Paste URL"
+                    >
+                        <i class="fas fa-paste"></i>
+                    </button>
+                </div>
+
+                <!-- Download Button -->
+                <button 
+                    type="submit" 
+                    id="downloadBtn"
+                    class="download-btn w-full py-4 rounded-xl text-white font-semibold flex items-center justify-center space-x-2"
+                >
+                    <span>Download Course</span>
+                    <i class="fas fa-download"></i>
+                </button>
+            </form>
+
+            <!-- Progress Section -->
+            <div id="progressSection" class="mt-8 hidden">
+                <div class="mb-4">
+                    <div class="flex justify-between text-sm text-gray-400 mb-2">
+                        <span>Downloading...</span>
+                        <span id="progressText">0%</span>
+                    </div>
+                    <div class="h-2 bg-black/20 rounded-full">
+                        <div 
+                            id="progressBar" 
+                            class="h-full bg-gradient-to-r from-purple-600 to-purple-400 rounded-full transition-all duration-300"
+                            style="width: 0%"
+                        ></div>
+                    </div>
+                </div>
+                <div id="downloadStatus" class="text-sm text-gray-400 text-center"></div>
+            </div>
+
+            <!-- Status Messages -->
+            <div id="statusMessage" class="mt-6 text-center text-sm"></div>
+        </div>
+
+        <!-- Footer -->
+        <div class="mt-6 text-center text-sm text-gray-500">
+            <div class="flex justify-center space-x-4">
+                <span>
+                    <i class="fas fa-clock text-purple-500"></i>
+                    <span id="currentTime">2025-02-07 09:39:27</span>
+                </span>
+                <span>
+                    <i class="fas fa-user text-purple-500"></i>
+                    <span id="userLogin">Anytu9878978798</span>
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const downloadForm = document.getElementById('downloadForm');
+            const courseUrl = document.getElementById('courseUrl');
+            const pasteBtn = document.getElementById('pasteBtn');
+            const progressSection = document.getElementById('progressSection');
+            const progressBar = document.getElementById('progressBar');
+            const progressText = document.getElementById('progressText');
+            const downloadStatus = document.getElementById('downloadStatus');
+            const statusMessage = document.getElementById('statusMessage');
+
+            // Paste button functionality
+            pasteBtn.addEventListener('click', async () => {
+                try {
+                    const text = await navigator.clipboard.readText();
+                    courseUrl.value = text;
+                } catch (err) {
+                    showStatus('Please paste the URL manually', 'error');
+                }
+            });
+
+            // Form submission
+            downloadForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                const url = courseUrl.value.trim();
+                if (!url) {
+                    showStatus('Please enter a valid Udemy course URL', 'error');
+                    return;
+                }
+
+                // Show progress section
+                progressSection.classList.remove('hidden');
+                
+                // Simulate progress (replace with actual download progress)
+                simulateProgress();
+
+                try {
+                    // Here we'll make the actual API call to our backend
+                    const response = await startDownload(url);
+                    
+                    if (response.success) {
+                        showStatus('Download completed successfully!', 'success');
+                    } else {
+                        showStatus(response.error || 'Download failed', 'error');
+                    }
+                } catch (error) {
+                    showStatus('An error occurred during download', 'error');
+                }
+            });
+
+            // Show status message
+            function showStatus(message, type = 'info') {
+                statusMessage.textContent = message;
+                statusMessage.className = 'mt-6 text-center text-sm';
+                statusMessage.classList.add(type === 'error' ? 'text-red-400' : 'text-green-400');
+            }
+
+            // Simulate progress (replace with actual progress tracking)
+            function simulateProgress() {
+                let progress = 0;
+                const interval = setInterval(() => {
+                    progress += Math.random() * 10;
+                    if (progress > 100) {
+                        progress = 100;
+                        clearInterval(interval);
+                    }
+                    updateProgress(progress);
+                }, 500);
+            }
+
+            // Update progress bar
+            function updateProgress(percent) {
+                const progress = Math.min(100, Math.round(percent));
+                progressBar.style.width = `${progress}%`;
+                progressText.textContent = `${progress}%`;
+                downloadStatus.textContent = progress === 100 ? 
+                    'Download complete!' : 'Downloading course content...';
+            }
+
+            // Start download function (implement actual API call)
+            async function startDownload(url) {
+                // Replace with actual API call to your backend
+                return new Promise(resolve => {
+                    setTimeout(() => {
+                        resolve({ success: true });
+                    }, 5000);
+                });
+            }
+
+            // Update current time
+            function updateTime() {
+                const now = new Date();
+                const formatted = now.toISOString().replace('T', ' ').substr(0, 19);
+                document.getElementById('currentTime').textContent = formatted;
+            }
+            setInterval(updateTime, 1000);
+        });
+    </script>
+</body>
+</html>
