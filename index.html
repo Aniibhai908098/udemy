@@ -209,6 +209,27 @@
             }
             setInterval(updateTime, 1000);
         });
+
+        async function startDownload(url) {
+    try {
+        const response = await fetch('http://localhost:3000/api/download', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ courseUrl: url })
+        });
+
+        const data = await response.json();
+        if (!data.success) {
+            throw new Error(data.error);
+        }
+
+        return data;
+    } catch (error) {
+        throw new Error(error.message || 'Download failed');
+    }
+}
     </script>
 </body>
 </html>
